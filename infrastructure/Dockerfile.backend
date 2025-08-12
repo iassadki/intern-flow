@@ -1,0 +1,35 @@
+# Dockerfile pour le backend API
+FROM node:18-alpine AS base
+
+# Installer les dépendances nécessaires
+RUN apk add --no-cache libc6-compat
+
+# Créer le répertoire de l'application
+WORKDIR /app
+
+# Copier les fichiers de configuration des packages
+COPY package*.json ./
+
+# Installer les dépendances
+RUN npm ci --only=production
+
+# Copier le code source
+COPY . .
+
+# Créer un utilisateur non-root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nodeuser
+
+# Changer la propriété des fichiers
+RUN chown -R nodeuser:nodejs /app
+USER nodeuser
+
+# Exposer le port
+EXPOSE 3001
+
+# Variables d'environnement
+ENV NODE_ENV=production
+ENV PORT=3001
+
+# Commande de démarrage
+CMD ["npm", "start"]

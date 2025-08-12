@@ -1,0 +1,85 @@
+name: intern-flow
+
+services:
+  # Base de données PostgreSQL
+  database:
+    image: postgres:15-alpine
+    container_name: intern-flow-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: intern_flow
+      POSTGRES_USER: intern_user
+      POSTGRES_PASSWORD: intern_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/intern-flowDB.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - intern-flow-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U intern_user -d intern_flow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API (Node.js/Express)
+  backend:
+    build:
+      context: ../backend
+      dockerfile: ../infrastructure/Dockerfile.backend
+    container_name: intern-flow-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://intern_user:intern_password@database:5432/intern_flow
+    ports:
+      - "3001:3001"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - intern-flow-network
+    volumes:
+      - ../backend:/app
+      - /app/node_modules
+
+  # Frontend Next.js
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../infrastructure/Dockerfile.frontend
+    container_name: intern-flow-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - intern-flow-network
+
+  # Nginx reverse proxy (optionnel)
+  nginx:
+    image: nginx:alpine
+    container_name: intern-flow-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - intern-flow-network
+
+networks:
+  intern-flow-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
