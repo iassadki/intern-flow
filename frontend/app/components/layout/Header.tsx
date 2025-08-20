@@ -8,8 +8,8 @@ export default function Header() {
     const [userName, setUserName] = useState("Ilias");
 
     return (
-        <h1>Bienvenue {userName}</h1>
-    
+        <h1 className="text-2xl text-gray-800 mb-6 p-3">Bienvenue {userName}</h1>
+
     );
 
 }

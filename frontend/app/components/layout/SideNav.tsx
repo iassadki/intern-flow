@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Home, FileText, Pen, Users, User, Settings, LogOut, Moon } from "lucide-react";
+import { Home, FileText, Pen, Users, User, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
