@@ -23,8 +23,8 @@ export default function SideNav() {
             <nav className="flex flex-col space-y-3 w-full px-6">
                 <Link 
                     href="/" 
-                    className={`flex items-center space-x-4 mb-6 font-bold ${
-                        pathname === "/" ? "text-primary" : "text-gray-500 hover:text-primary"
+                    className={`flex items-center space-x-4 mb-6 ${
+                        pathname === "/" ? "text-primary font-bold" : "text-gray-500 hover:text-primary"
                     }`}
                 >
                     <Home size={20} />
