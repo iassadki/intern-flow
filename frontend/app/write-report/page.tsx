@@ -4,12 +4,13 @@ import { useState } from "react";
 import Header from '@/components/layout/Header';
 import InputField from "@/components/ui/InputField";
 import TextAreaField from "@/components/ui/TextAreaField";
+import DateField from "@/components/ui/DateField";
 import ButtonPrimary from "@/components/ui/ButtonPrimary";
 
 export default function WriteReportPage() {
   const [formData, setFormData] = useState({
-    titre: "",
     date: "",
+    titre: "",
     texte: "",
   });
 
@@ -32,18 +33,18 @@ export default function WriteReportPage() {
       
       <div className="bg-white rounded-lg p-3">
         <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
+          <DateField
+            label="Date"
+            name="date"
+            type="date"
+            value={formData.date}
+            onChange={handleChange}
+          />
           <InputField
             label="Titre"
             name="titre"
             placeholder="Titre du compte rendu"
             value={formData.titre}
-            onChange={handleChange}
-          />
-          <InputField
-            label="Date"
-            name="date"
-            type="date"
-            value={formData.date}
             onChange={handleChange}
           />
           <TextAreaField

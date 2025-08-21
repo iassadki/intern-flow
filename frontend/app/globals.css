@@ -5,6 +5,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Style personnalisé pour les placeholders */
+.dark-placeholder::placeholder {
+  color: #374151 !important;
+  opacity: 1 !important;
+}
+
 @theme {
   --color-primary: #A0020F;
   --color-secondary: #F49CBB;
