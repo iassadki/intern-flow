@@ -43,7 +43,7 @@ app.get('/api/entreprises', async (req, res) => {
   }
 });
 
-app.get('/api/utilisateurs', async (req, res) => {
+app.get('/api/users', async (req, res) => {
   try {
     const result = await pool.query('SELECT id, nom, prenom, email, ville, specialite FROM UTILISATEUR ORDER BY nom');
     res.json(result.rows);
@@ -54,7 +54,7 @@ app.get('/api/utilisateurs', async (req, res) => {
 });
 
 // Route pour les comptes rendus
-app.get('/api/comptes-rendus', async (req, res) => {
+app.get('/api/reports-list', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM CR ORDER BY dateCreation DESC');
     res.json(result.rows);
@@ -65,17 +65,17 @@ app.get('/api/comptes-rendus', async (req, res) => {
 });
 
 // Route pour créer un compte rendu
-app.post('/api/comptes-rendus', async (req, res) => {
-  const { titre, contenu } = req.body;
+app.post('/api/create-report', async (req, res) => {
+  const { date, titre, contenu } = req.body;
   
-  if (!titre || !contenu) {
-    return res.status(400).json({ error: 'Titre et contenu requis' });
+  if (!date || !titre || !contenu) {
+    return res.status(400).json({ error: 'Date, titre et contenu requis' });
   }
 
   try {
     const result = await pool.query(
-      'INSERT INTO CR (titre, contenu, dateCreation, dateModif) VALUES ($1, $2, NOW(), NOW()) RETURNING *',
-      [titre, contenu]
+      'INSERT INTO CR (titre, contenu, dateCreation, dateModif) VALUES ($1, $2, $3, NOW()) RETURNING *',
+      [titre, contenu, date]
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
