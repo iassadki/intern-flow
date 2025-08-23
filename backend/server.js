@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const { pool, testConnection } = require('./config/database');
 require('dotenv').config();
 
 const app = express();
@@ -21,29 +22,66 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  const dbStatus = await testConnection();
   res.json({ 
     status: 'healthy',
+    database: dbStatus ? 'connected' : 'disconnected',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
 });
 
 // Routes API
-app.get('/api/entreprises', (req, res) => {
-  // TODO: Connecter à la base de données
-  res.json([
-    { id: 1, nom: 'Exemple Entreprise 1', ville: 'Paris' },
-    { id: 2, nom: 'Exemple Entreprise 2', ville: 'Lyon' }
-  ]);
+app.get('/api/entreprises', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM ENTREPRISE ORDER BY nom');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des entreprises:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des entreprises' });
+  }
 });
 
-app.get('/api/utilisateurs', (req, res) => {
-  // TODO: Connecter à la base de données
-  res.json([
-    { id: 1, nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@email.com' },
-    { id: 2, nom: 'Martin', prenom: 'Marie', email: 'marie.martin@email.com' }
-  ]);
+app.get('/api/utilisateurs', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, nom, prenom, email, ville, specialite FROM UTILISATEUR ORDER BY nom');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des utilisateurs:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des utilisateurs' });
+  }
+});
+
+// Route pour les comptes rendus
+app.get('/api/comptes-rendus', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM CR ORDER BY dateCreation DESC');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des comptes rendus:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des comptes rendus' });
+  }
+});
+
+// Route pour créer un compte rendu
+app.post('/api/comptes-rendus', async (req, res) => {
+  const { titre, contenu } = req.body;
+  
+  if (!titre || !contenu) {
+    return res.status(400).json({ error: 'Titre et contenu requis' });
+  }
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO CR (titre, contenu, dateCreation, dateModif) VALUES ($1, $2, NOW(), NOW()) RETURNING *',
+      [titre, contenu]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Erreur lors de la création du compte rendu:', error);
+    res.status(500).json({ error: 'Erreur lors de la création du compte rendu' });
+  }
 });
 
 // Gestion des erreurs 404
@@ -64,8 +102,21 @@ app.use((err, req, res, next) => {
 });
 
 // Démarrage du serveur
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Serveur backend démarré sur le port ${PORT}`);
-  console.log(`📡 API accessible sur http://localhost:${PORT}`);
-  console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
-});
+const startServer = async () => {
+  // Test de la connexion à la base de données au démarrage
+  const dbConnected = await testConnection();
+  
+  if (!dbConnected) {
+    console.error('❌ Impossible de se connecter à la base de données');
+    process.exit(1);
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Serveur backend démarré sur le port ${PORT}`);
+    console.log(`📡 API accessible sur http://localhost:${PORT}`);
+    console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`📊 Base de données: Connectée`);
+  });
+};
+
+startServer();
