@@ -31,7 +31,7 @@ export default function WriteReportPage() {
       <Header />
       <h1 className="text-4xl font-bold text-gray-800 mt-15 mb-6 p-3">Écrire un compte rendu</h1>
       
-      <div className="bg-white rounded-lg p-3">
+      <div className="bg-white rounded-lg p-3 animate-fadeInFromTop">
         <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
           <DateField
             label="Date"
