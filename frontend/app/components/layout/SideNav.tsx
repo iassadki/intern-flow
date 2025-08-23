@@ -61,7 +61,7 @@ export default function SideNav() {
                     <span>Liste d&apos;élèves</span>
                 </Link> */}
 
-                <Link 
+                {/* <Link 
                     href="/settings" 
                     className={`flex items-center space-x-4 mb-6 ${
                         pathname === "/settings" ? "text-primary font-bold" : "text-gray-500 hover:text-primary"
@@ -69,7 +69,7 @@ export default function SideNav() {
                 >
                     <Settings size={20} />
                     <span>Paramètres</span>
-                </Link>
+                </Link> */}
 
                 <Link 
                     href="/profile" 
